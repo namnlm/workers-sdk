@@ -1,5 +1,5 @@
-import { vi } from "vitest";
 import { execa } from "execa";
+import { vi } from "vitest";
 import { getPackageManager } from "../package-manager";
 import { mockConsoleMethods } from "./helpers/mock-console";
 import { useMockIsTTY } from "./helpers/mock-istty";
@@ -30,7 +30,7 @@ describe("generate", () => {
 
 		it("Delegates to create cloudflare", async () => {
 			await runWrangler("generate");
-			console.log(std.out)
+			console.log(std.out);
 			expect(execa).toHaveBeenCalledWith(
 				"mockpm",
 				["create", "cloudflare@2.5.0"],
@@ -42,7 +42,7 @@ describe("generate", () => {
 
 		it("Passes along the template option", async () => {
 			await runWrangler("generate template foo/bar");
-			console.log(std.out)
+			console.log(std.out);
 			expect(execa).toHaveBeenCalledWith(
 				"mockpm",
 				["create", "cloudflare@2.5.0", "--", "--template", "foo/bar"],
@@ -51,6 +51,5 @@ describe("generate", () => {
 				}
 			);
 		});
-
 	});
 });
