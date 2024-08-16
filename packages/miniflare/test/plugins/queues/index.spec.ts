@@ -804,7 +804,7 @@ test("supports message contentTypes", async (t) => {
 test("validates message size", async (t) => {
 	const mf = new Miniflare({
 		verbose: true,
-		queueProducers: ["QUEUE"],
+		queueProducers: { QUEUE: "my-queue" },
 		modules: true,
 		script: `export default {
       async fetch(request, env, ctx) {

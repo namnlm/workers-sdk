@@ -409,8 +409,22 @@ function getQueueProducers(
 				);
 			}
 
-			for (const [bindingName, opts] of Object.entries(workerProducers)) {
-				queueProducers.set(bindingName, { workerName, ...opts });
+			type Entries<T> = { [K in keyof T]: [K, T[K]] }[keyof T][];
+			type ProducersIterable = Entries<typeof workerProducers>;
+			const producersIterable = Object.entries(
+				workerProducers
+			) as ProducersIterable;
+
+			for (const [bindingName, opts] of producersIterable) {
+				if (typeof opts === "string") {
+					// queueProducers: { "MY_QUEUE": "my-queue" }
+					queueProducers.set(bindingName, { workerName, queueName: opts });
+				} else {
+					opts;
+					// queueProducers: ["MY_QUEUE"] or
+					// queueProducers: { QUEUE: { queueName: "QUEUE", ... } }
+					queueProducers.set(bindingName, { workerName, ...opts });
+				}
 			}
 		}
 	}
