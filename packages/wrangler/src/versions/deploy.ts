@@ -10,6 +10,7 @@ import {
 } from "@cloudflare/cli/interactive";
 import { fetchResult } from "../cfetch";
 import { findWranglerToml, readConfig } from "../config";
+import { defineCommand } from "../core/define-command";
 import { UserError } from "../errors";
 import { CI } from "../is-ci";
 import isInteractive from "../is-interactive";
@@ -29,10 +30,6 @@ import {
 } from "./api";
 import type { Config } from "../config";
 import type {
-	CommonYargsArgv,
-	StrictYargsOptionsToInterface,
-} from "../yargs-types";
-import type {
 	ApiDeployment,
 	ApiVersion,
 	Percentage,
@@ -44,61 +41,73 @@ const EPSILON = 0.001; // used to avoid floating-point errors. Comparions to a v
 const BLANK_INPUT = "-"; // To be used where optional user-input is displayed and the value is nullish
 const ZERO_WIDTH_SPACE = "\u200B"; // Some log lines get trimmed and so, to indent, the line is prefixed with a zero-width space
 
-export type VersionsDeployArgs = StrictYargsOptionsToInterface<
-	typeof versionsDeployOptions
->;
+export type VersionsDeployArgs = typeof command.args;
 
 type OptionalPercentage = number | null; // null means automatically assign (evenly distribute remaining traffic)
 
-export function versionsDeployOptions(yargs: CommonYargsArgv) {
-	return yargs
-		.option("name", {
+const command = defineCommand({
+	command: "wrangler versions deploy",
+
+	metadata: {
+		description:
+			"Safely roll out new Versions of your Worker by splitting traffic between multiple Versions [beta]",
+		status: "open-beta",
+		owner: "Workers: Authoring and Testing",
+	},
+	behaviour: {
+		requireConfig: true,
+	},
+
+	args: {
+		name: {
 			describe: "Name of the worker",
 			type: "string",
-			requiresArg: true,
-		})
-		.option("version-id", {
+		},
+		"version-id": {
 			describe: "Worker Version ID(s) to deploy",
-			type: "array",
-			string: true,
-			requiresArg: true,
-		})
-		.option("percentage", {
+			type: "string",
+			array: true,
+		},
+		percentage: {
 			describe:
 				"Percentage of traffic to split between Worker Version(s) (0-100)",
-			type: "array",
-			number: true,
-			requiresArg: true,
-		})
-		.positional("version-specs", {
+			type: "number",
+			array: true,
+		},
+		"version-specs": {
 			describe:
 				"Shorthand notation to deploy Worker Version(s) [<version-id>@<percentage>..]",
 			type: "string",
 			array: true,
-		})
-		.option("message", {
+		},
+		message: {
 			describe: "Description of this deployment (optional)",
 			type: "string",
-			requiresArg: true,
-		})
-		.option("yes", {
+		},
+		yes: {
 			alias: "y",
 			describe: "Automatically accept defaults to prompts",
 			type: "boolean",
 			default: false,
-		})
-		.option("dry-run", {
+		},
+		"dry-run": {
 			describe: "Don't actually deploy",
 			type: "boolean",
 			default: false,
-		})
-		.option("max-versions", {
+		},
+		"max-versions": {
 			hidden: true, // experimental, not supported long-term
 			describe: "Maximum allowed versions to select",
 			type: "number",
 			default: 2, // (when server-side limitation is lifted, we can update this default or just remove the option entirely)
-		});
-}
+		},
+	},
+	positionalArgs: ["version-specs"],
+
+	async handler(args) {
+		await versionsDeployHandler(args);
+	},
+});
 
 export async function versionsDeployHandler(args: VersionsDeployArgs) {
 	await printWranglerBanner();
