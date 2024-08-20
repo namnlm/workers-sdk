@@ -401,6 +401,7 @@ function getQueueProducers(
 		if (workerProducers !== undefined) {
 			// De-sugar array consumer options to record mapping to empty options
 			if (Array.isArray(workerProducers)) {
+				// queueProducers: ["MY_QUEUE"]
 				workerProducers = Object.fromEntries(
 					workerProducers.map((bindingName) => [
 						bindingName,
@@ -421,7 +422,6 @@ function getQueueProducers(
 					queueProducers.set(bindingName, { workerName, queueName: opts });
 				} else {
 					opts;
-					// queueProducers: ["MY_QUEUE"] or
 					// queueProducers: { QUEUE: { queueName: "QUEUE", ... } }
 					queueProducers.set(bindingName, { workerName, ...opts });
 				}
