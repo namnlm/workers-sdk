@@ -1,3 +1,8 @@
+export type AssetEntry = {
+	path: string;
+	contentHash: string;
+};
+
 export class AssetsManifest {
 	private data: ArrayBuffer;
 

@@ -411,7 +411,9 @@ export function buildMiniflareBindingOptions(config: MiniflareBindingsConfig): {
 	// Setup service bindings to external services
 	const serviceBindings: NonNullable<WorkerOptions["serviceBindings"]> = {
 		...config.serviceBindings,
-		...(config.experimentalAssets ? { ASSET_SERVER: "asset-server" } : {}),
+		...(config.experimentalAssets
+			? { ASSET_SERVER: "asset-server-worker" }
+			: {}),
 	};
 
 	const notFoundServices = new Set<string>();

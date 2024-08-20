@@ -1,13 +1,27 @@
 import { AssetsManifest } from "./assets-manifest";
-import { NoopAssetsManifest } from "./assets-manifest-no-op";
-
-interface Env {
-	ASSETS_MANIFEST: ArrayBuffer;
-	ASSETS_KV_NAMESPACE: KVNamespace;
-}
+import {
+	InternalServerErrorResponse,
+	MethodNotAllowedResponse,
+	NotFoundResponse,
+	OkResponse,
+} from "./responses";
+import { getAdditionalHeaders, getMergedHeaders } from "./utils/headers";
+import { getAssetWithMetadataFromKV } from "./utils/kv";
 
 export default {
 	async fetch(request: Request, env: Env) {
+		if (!request.method.match(/^(get)$/i)) {
+			return new MethodNotAllowedResponse();
+		}
+
+		try {
+			return this.handleRequest(request, env);
+		} catch (err) {
+			return new InternalServerErrorResponse(err);
+		}
+	},
+
+	async handleRequest(request: Request, env: Env) {
 		const {
 			// ASSETS_MANIFEST is a pipeline binding to an ArrayBuffer containing the
 			// binary-encoded site manifest
@@ -19,20 +33,33 @@ export default {
 		} = env;
 
 		const url = new URL(request.url);
-		const { pathname } = url;
+		let { pathname } = url;
 
-		const isLocalDevContext = new Uint8Array(ASSETS_MANIFEST).at(0) === 1;
-		const assetsManifest = isLocalDevContext
-			? new NoopAssetsManifest()
-			: new AssetsManifest(ASSETS_MANIFEST);
+		const assetsManifest = new AssetsManifest(ASSETS_MANIFEST);
+
+		pathname = globalThis.decodeURIComponent(pathname);
+
 		const assetEntry = await assetsManifest.get(pathname);
-
-		const content = await ASSETS_KV_NAMESPACE.get(assetEntry);
-
-		if (!content) {
-			return new Response("Not Found", { status: 404 });
+		if (!assetEntry) {
+			return new NotFoundResponse("Not Found :(");
 		}
 
-		return new Response(content);
+		const assetResponse = await getAssetWithMetadataFromKV(
+			ASSETS_KV_NAMESPACE,
+			assetEntry
+		);
+		if (!assetResponse || !assetResponse.value) {
+			return new NotFoundResponse("Not Found :(");
+		}
+
+		const { value: assetContent, metadata: assetMetadata } = assetResponse;
+		const additionalHeaders = getAdditionalHeaders(
+			assetEntry,
+			assetMetadata,
+			request
+		);
+		const headers = getMergedHeaders(request.headers, additionalHeaders);
+
+		return new OkResponse(assetContent, { headers, encodeBody: "automatic" });
 	},
 };
