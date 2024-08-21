@@ -6,12 +6,6 @@ type Env = {
 	ENVIRONMENT: Environment;
 };
 
-type BodyEncoding = "manual" | "automatic";
-
-interface ResponseInit {
-	encodeBody?: BodyEncoding;
-}
-
 interface KVNamespace {
 	getWithMetadata<Metadata = unknown>(
 		key: string,
