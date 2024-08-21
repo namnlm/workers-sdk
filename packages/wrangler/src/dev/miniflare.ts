@@ -411,9 +411,7 @@ export function buildMiniflareBindingOptions(config: MiniflareBindingsConfig): {
 	// Setup service bindings to external services
 	const serviceBindings: NonNullable<WorkerOptions["serviceBindings"]> = {
 		...config.serviceBindings,
-		...(config.experimentalAssets
-			? { ASSET_SERVER: "asset-server-worker" }
-			: {}),
+		...(config.experimentalAssets ? { ASSET_SERVER: "asset-worker" } : {}),
 	};
 
 	const notFoundServices = new Set<string>();
@@ -920,16 +918,16 @@ function getAssetServerWorker(
 	if (!config.experimentalAssets) {
 		return [];
 	}
-	const assetServerModulePath = require.resolve(
-		"@cloudflare/workers-shared/dist/asset-server-worker.mjs"
+	const assetWorkerModulePath = require.resolve(
+		"@cloudflare/workers-shared/dist/asset-worker.mjs"
 	);
-	const assetServerConfigPath = require.resolve(
-		"@cloudflare/workers-shared/asset-server-worker/wrangler.toml"
+	const assetWorkerConfigPath = require.resolve(
+		"@cloudflare/workers-shared/asset-worker/wrangler.toml"
 	);
 	let assetServerConfig: Config | undefined;
 
 	try {
-		assetServerConfig = readConfig(assetServerConfigPath, {});
+		assetServerConfig = readConfig(assetWorkerConfigPath, {});
 	} catch (err) {
 		throw new UserError(
 			"Failed to read the Asset Server Worker configuration file.\n" + `${err}`
@@ -941,11 +939,11 @@ function getAssetServerWorker(
 			name: assetServerConfig?.name,
 			compatibilityDate: assetServerConfig?.compatibility_date,
 			compatibilityFlags: assetServerConfig?.compatibility_flags,
-			modulesRoot: dirname(assetServerModulePath),
+			modulesRoot: dirname(assetWorkerModulePath),
 			modules: [
 				{
 					type: "ESModule",
-					path: assetServerModulePath,
+					path: assetWorkerModulePath,
 				},
 			],
 			unsafeDirectSockets: [

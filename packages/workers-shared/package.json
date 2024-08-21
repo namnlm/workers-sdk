@@ -23,14 +23,14 @@
 	],
 	"scripts": {
 		"build": "pnpm run clean && pnpm run bundle:asset-server:prod",
-		"bundle:asset-server": "esbuild asset-server-worker/src/index.ts --format=esm --bundle --outfile=dist/asset-server-worker.mjs --sourcemap=external --external:cloudflare:*",
-		"bundle:asset-server:prod": "pnpm run bundle:asset-server --minify",
+		"bundle:asset-worker": "esbuild asset-worker/src/index.ts --format=esm --bundle --outfile=dist/asset-worker.mjs --sourcemap=external --external:cloudflare:*",
+		"bundle:asset-worker:prod": "pnpm run bundle:asset-worker --minify",
 		"check:lint": "eslint . --max-warnings=0",
 		"check:type": "tsc",
 		"clean": "rimraf dist",
-		"deploy": "pnpm run deploy:asset-server",
-		"deploy:asset-server": "CLOUDFLARE_API_TOKEN=$WORKERS_NEW_CLOUDFLARE_API_TOKEN wrangler versions upload --experimental-versions -c asset-server-worker/wrangler.toml",
-		"dev": "pnpm run clean && concurrently -n bundle:asset-server -c blue \"pnpm run bundle:asset-server --watch\""
+		"deploy": "pnpm run deploy:asset-worker",
+		"deploy:asset-worker": "CLOUDFLARE_API_TOKEN=$WORKERS_DEPLOY_AND_CONFIG_CLOUDFLARE_API_TOKEN wrangler versions upload --experimental-versions -c asset-worker/wrangler.toml",
+		"dev": "pnpm run clean && concurrently -n bundle:asset-worker -c blue \"pnpm run bundle:asset-worker --watch\""
 	},
 	"devDependencies": {
 		"@cloudflare/eslint-config-worker": "workspace:*",

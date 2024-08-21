@@ -7,7 +7,7 @@
 # to this file are persisted in wrangler as well, when necessary.
 # (see packages/wrangler/src/dev/miniflare.ts -> buildMiniflareOptions())
 ##
-name = "asw2"
+name = "asset-worker"
 account_id = "0f1b8aa119a907021f659042f95ea9ba"
 workers_dev = false
 main = "src/index.ts"
