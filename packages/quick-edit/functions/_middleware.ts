@@ -19,6 +19,8 @@ export const onRequest = async ({
 				"files.exclude": {
 					"*.d.ts": true,
 					"jsconfig.json": true,
+					"**/package.json": true,
+					"**/wrangler.toml": true,
 				},
 				"telemetry.telemetryLevel": "off",
 				"window.menuBarVisibility": "hidden",
