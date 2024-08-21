@@ -1,37 +1,46 @@
 import path from "path";
 import { logRaw } from "@cloudflare/cli";
 import { findWranglerToml, readConfig } from "../config";
+import { defineCommand } from "../core/define-command";
 import { UserError } from "../errors";
 import * as metrics from "../metrics";
 import { printWranglerBanner } from "../update-check";
 import { requireAuth } from "../user";
 import formatLabelledValues from "../utils/render-labelled-values";
 import { fetchDeployableVersions } from "./api";
-import type {
-	CommonYargsArgv,
-	StrictYargsOptionsToInterface,
-} from "../yargs-types";
 import type { ApiVersion, VersionCache } from "./types";
 
 const BLANK_INPUT = "-"; // To be used where optional user-input is displayed and the value is nullish
 
-export type VersionsListArgs = StrictYargsOptionsToInterface<
-	typeof versionsListOptions
->;
+export type VersionsListArgs = typeof command.args;
 
-export function versionsListOptions(yargs: CommonYargsArgv) {
-	return yargs
-		.option("name", {
+const command = defineCommand({
+	command: "wrangler versions list",
+
+	metadata: {
+		description: "List the 10 most recent Versions of your Worker [beta]", // TODO(now): remove [beta]
+		owner: "Workers: Authoring and Testing",
+		status: "open-beta",
+	},
+	behaviour: {},
+
+	args: {
+		name: {
 			describe: "Name of the worker",
 			type: "string",
 			requiresArg: true,
-		})
-		.option("json", {
+		},
+		json: {
 			describe: "Display output as clean JSON",
 			type: "boolean",
 			default: false,
-		});
-}
+		},
+	},
+
+	async handler(args) {
+		await versionsListHandler(args);
+	},
+});
 
 export async function versionsListHandler(args: VersionsListArgs) {
 	if (!args.json) {

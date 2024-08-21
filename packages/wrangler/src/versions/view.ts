@@ -1,4 +1,5 @@
 import { logRaw } from "@cloudflare/cli";
+import { defineCommand } from "../core/define-command";
 import { UserError } from "../errors";
 import * as metrics from "../metrics";
 import { printWranglerBanner } from "../update-check";
@@ -7,36 +8,43 @@ import formatLabelledValues from "../utils/render-labelled-values";
 import { fetchVersion } from "./api";
 import { getConfig, getVersionSource } from "./list";
 import type { WorkerMetadataBinding } from "../deployment-bundle/create-worker-upload-form";
-import type {
-	CommonYargsArgv,
-	StrictYargsOptionsToInterface,
-} from "../yargs-types";
 
 const BLANK_INPUT = "-"; // To be used where optional user-input is displayed and the value is nullish
 
-export type VersionsViewArgs = StrictYargsOptionsToInterface<
-	typeof versionsViewOptions
->;
+export type VersionsViewArgs = typeof command.args;
 
-export function versionsViewOptions(yargs: CommonYargsArgv) {
-	return yargs
-		.positional("version-id", {
+const command = defineCommand({
+	command: "wrangler versions view",
+
+	metadata: {
+		description: "View the details of a specific version of your Worker [beta]",
+		status: "open-beta",
+		owner: "Workers: Authoring and Testing",
+	},
+	behaviour: {},
+
+	args: {
+		"version-id": {
 			describe: "The Worker Version ID to view",
 			type: "string",
-			requiresArg: true,
 			demandOption: true,
-		})
-		.option("name", {
+		},
+		name: {
 			describe: "Name of the worker",
 			type: "string",
-			requiresArg: true,
-		})
-		.option("json", {
+		},
+		json: {
 			describe: "Display output as clean JSON",
 			type: "boolean",
 			default: false,
-		});
-}
+		},
+	},
+	positionalArgs: ["version-id"],
+
+	async handler(args, ctx) {
+		await versionsViewHandler(args);
+	},
+});
 
 export async function versionsViewHandler(args: VersionsViewArgs) {
 	if (!args.json) {
