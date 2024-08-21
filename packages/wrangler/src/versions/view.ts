@@ -1,5 +1,5 @@
 import { logRaw } from "@cloudflare/cli";
-import { defineCommand } from "../core/define-command";
+import { defineCommand, defineNamespace } from "../core/define-command";
 import { UserError } from "../errors";
 import * as metrics from "../metrics";
 import { printWranglerBanner } from "../update-check";

@@ -8,6 +8,7 @@ import { version as wranglerVersion } from "../package.json";
 import { ai } from "./ai";
 import { cloudchamber } from "./cloudchamber";
 import { loadDotEnv, readConfig } from "./config";
+import registerAllCommands from "./core/register-commands";
 import { d1 } from "./d1";
 import { deleteHandler, deleteOptions } from "./delete";
 import { deployHandler, deployOptions } from "./deploy";
@@ -316,6 +317,14 @@ export function createCLIParser(argv: string[]) {
 			}
 		}
 	);
+
+	// Let's try standarising how we register commands ¯\_(ツ)_/¯
+	try {
+		registerAllCommands(wrangler, subHelp);
+	} catch (err) {
+		console.error(err);
+		throw err;
+	}
 
 	/*
 	 * You will note that we use the form for all commands where we use the builder function

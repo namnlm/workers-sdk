@@ -1,5 +1,6 @@
 import path from "node:path";
 import { findWranglerToml, readConfig } from "../config";
+import { defineNamespace } from "../core/define-command";
 import { getEntry } from "../deployment-bundle/entry";
 import { UserError } from "../errors";
 import { processExperimentalAssetsArg } from "../experimental-assets";
@@ -22,6 +23,18 @@ import type {
 	StrictYargsOptionsToInterface,
 	SubHelp,
 } from "../yargs-types";
+import "./view";
+import "./list";
+import "./deploy";
+
+defineNamespace({
+	command: "wrangler versions",
+	metadata: {
+		description: `🫧  List, view, upload and deploy Versions of your Worker to Cloudflare`,
+		status: "open-beta",
+		owner: "Workers: Authoring and Testing",
+	},
+});
 
 async function standardPricingWarning(config: Config) {
 	if (config.usage_model !== undefined) {
