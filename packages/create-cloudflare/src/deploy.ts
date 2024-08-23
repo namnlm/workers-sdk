@@ -1,7 +1,7 @@
 import { mkdtemp, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { crash, log, startSection, updateStatus } from "@cloudflare/cli";
+import { crash, startSection, updateStatus } from "@cloudflare/cli";
 import { processArgument } from "@cloudflare/cli/args";
 import { blue, brandColor, dim } from "@cloudflare/cli/colors";
 import { C3_DEFAULTS, openInBrowser } from "helpers/cli";
