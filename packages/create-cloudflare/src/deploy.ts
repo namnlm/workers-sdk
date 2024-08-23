@@ -1,4 +1,4 @@
-import { mkdtemp, readFile } from "node:fs/promises";
+import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { crash, startSection, updateStatus } from "@cloudflare/cli";
@@ -6,6 +6,7 @@ import { processArgument } from "@cloudflare/cli/args";
 import { blue, brandColor, dim } from "@cloudflare/cli/colors";
 import { C3_DEFAULTS, openInBrowser } from "helpers/cli";
 import { quoteShellArgs, runCommand } from "helpers/command";
+import { readFile } from "helpers/files";
 import { detectPackageManager } from "helpers/packageManagers";
 import { poll } from "helpers/poll";
 import { isInsideGitRepo } from "./git";
@@ -121,7 +122,8 @@ export const runDeploy = async (ctx: C3Context) => {
 	});
 
 	try {
-		const contents = await readFile(outputFile, "utf8");
+		const contents = readFile(outputFile);
+
 		const entries = contents
 			.split("\n")
 			.filter(Boolean)
