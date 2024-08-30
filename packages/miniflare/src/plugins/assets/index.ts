@@ -221,11 +221,7 @@ const hashPath = async (path: string) => {
 };
 
 const encodeFilePath = (filePath: string) => {
-	const encodedPath = filePath
-		.split(path.sep)
-		.map((segment) => encodeURIComponent(segment))
-		.join("/");
-	return "/" + encodedPath;
+	return encodeURIComponent("/" + filePath.split(path.sep).join("/"));
 };
 
 // sorts ascending by path hash

@@ -102,7 +102,10 @@ export const syncExperimentalAssets = async (
 			}
 			// just logging file uploads at the moment...
 			// unsure how to log deletion vs unchanged file ignored/if we want to log this
-			assetLogCount = logAssetUpload(`+ ${manifestEntry[0]}`, assetLogCount);
+			assetLogCount = logAssetUpload(
+				`+ ${decodeFilePath(manifestEntry[0])}`,
+				assetLogCount
+			);
 			return manifestEntry;
 		});
 	});
@@ -120,7 +123,9 @@ export const syncExperimentalAssets = async (
 			// This is so we don't run out of memory trying to upload the files.
 			const payload: UploadPayloadFile[] = await Promise.all(
 				bucket.map(async (manifestEntry) => {
-					const absFilePath = path.join(assetDirectory, manifestEntry[0]);
+					const decodedFilePath = decodeFilePath(manifestEntry[0]);
+					const absFilePath = path.join(assetDirectory, decodedFilePath);
+
 					return {
 						base64: true,
 						key: manifestEntry[1].hash,
@@ -351,10 +356,9 @@ export function processExperimentalAssetsArg(
 }
 
 const encodeFilePath = (filePath: string) => {
-	// NB windows will disallow these characters in file paths anyway < > : " / \ | ? *
-	const encodedPath = filePath
-		.split(path.sep)
-		.map((segment) => encodeURIComponent(segment))
-		.join("/");
-	return "/" + encodedPath;
+	return encodeURIComponent("/" + filePath.split(path.sep).join("/"));
+};
+
+const decodeFilePath = (filePath: string) => {
+	return decodeURIComponent(filePath).split("/").join(path.sep);
 };

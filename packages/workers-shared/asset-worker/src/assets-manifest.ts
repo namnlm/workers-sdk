@@ -18,7 +18,7 @@ export class AssetsManifest {
 
 	async get(pathname: string) {
 		// encode pathname to match manifest encoding
-		const pathHash = await hashPath(pathname);
+		const pathHash = await hashPath(encodeURIComponent(pathname));
 		const entry = binarySearch(
 			new Uint8Array(this.data, HEADER_SIZE),
 			pathHash
