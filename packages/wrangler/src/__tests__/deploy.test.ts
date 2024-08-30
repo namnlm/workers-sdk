@@ -7778,6 +7778,59 @@ addEventListener('fetch', event => {});`
 				expect(std.warn).toMatchInlineSnapshot(`""`);
 			});
 
+			it("should support durable object bindings to SQLite classes", async () => {
+				writeWranglerToml({
+					durable_objects: {
+						bindings: [
+							{
+								name: "EXAMPLE_DO_BINDING",
+								class_name: "ExampleDurableObject",
+							},
+						],
+					},
+					migrations: [
+						{ tag: "v1", new_sqlite_classes: ["ExampleDurableObject"] },
+						{ tag: "v1", deleted_classes: ["ExampleDurableObject"] }
+					],
+				});
+				fs.writeFileSync(
+					"index.js",
+					`export class ExampleDurableObject {}; export default{};`
+				);
+				mockSubDomainRequest();
+				mockLegacyScriptData({
+					scripts: [{ id: "test-name", migration_tag: "v1" }],
+				});
+				mockUploadWorkerRequest({
+					expectedBindings: [
+						{
+							class_name: "ExampleDurableObject",
+							name: "EXAMPLE_DO_BINDING",
+							type: "durable_object_namespace",
+						},
+					],
+				});
+
+				await runWrangler("deploy index.js");
+				expect(std.out).toMatchInlineSnapshot(`
+			"Total Upload: xx KiB / gzip: xx KiB
+			Worker Startup Time: 100 ms
+			Your worker has access to the following bindings:
+			- Durable Objects:
+			  - EXAMPLE_DO_BINDING: ExampleDurableObject
+			Uploaded test-name (TIMINGS)
+			Published test-name (TIMINGS)
+			  https://test-name.test-sub-domain.workers.dev
+			Current Deployment ID: Galaxy-Class
+			Current Version ID: Galaxy-Class
+
+
+			Note: Deployment ID has been renamed to Version ID. Deployment ID is present to maintain compatibility with the previous behavior of this command. This output will change in a future version of Wrangler. To learn more visit: https://developers.cloudflare.com/workers/configuration/versions-and-deployments"
+		`);
+				expect(std.err).toMatchInlineSnapshot(`""`);
+				expect(std.warn).toMatchInlineSnapshot(`""`);
+			});
+
 			it("should support service-workers binding to external durable objects", async () => {
 				writeWranglerToml({
 					durable_objects: {

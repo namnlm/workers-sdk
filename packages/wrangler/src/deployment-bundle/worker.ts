@@ -255,6 +255,7 @@ export interface CfDurableObjectMigrations {
 	new_tag: string;
 	steps: {
 		new_classes?: string[];
+		new_sqlite_classes?: string[];
 		renamed_classes?: {
 			from: string;
 			to: string;
